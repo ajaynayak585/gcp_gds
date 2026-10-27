@@ -61,7 +61,7 @@ def order_event(request):
         "total_amount":     enriched["total_amount"],
         "payment_method":   enriched["payment_method"],
         "shipping_address": enriched["shipping_address"],
-        "message":          "Order received and stored."
+        "message":          "Order received and stored successfully"
     }
     logger.info("Order %s processed successfully", enriched["order_id"])
     return make_response(jsonify(resp), 200)
