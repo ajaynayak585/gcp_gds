@@ -30,6 +30,7 @@ def main():
     writer.archive_processed_csv("gds_test_ajay", proc_date)
 
     spark.stop()
+    pass
     sys.exit(0)
 
 if __name__ == "__main__":
