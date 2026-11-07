@@ -1,0 +1,4 @@
+product_id,name,category,price,supplier,status,effective_date
+P3,Gizmo A,Electronics,9.99,Supplier Z,active,2025-05-03
+P1,Widget A,Gadgets,19.99,Supplier Y,active,2025-05-03
+P4,Gizmo B,Tools,14.99,Supplier Z,discontinued,2025-05-03
