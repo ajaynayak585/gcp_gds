@@ -17,7 +17,8 @@ CREATE TABLE IF NOT EXISTS `mythic-aloe-457912-d5.product_dwh.dim_products_stagi
   is_current             BOOL
 );
 
-truncate table `mythic-aloe-457912-d5.product_dwh.dim_products`;
+truncate table `mythic-aloe-457912-d5.product_dwh.dim_products`; 
+--ajay
 
 -- 3) Dimension table with true SCD-2, partitioned & clustered
 CREATE TABLE IF NOT EXISTS `mythic-aloe-457912-d5.product_dwh.dim_products` (
