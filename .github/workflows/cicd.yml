@@ -56,4 +56,4 @@ jobs:
 
     - name: Copy main.py to GCS root
       run: |
-        gsutil cp ProductSCD2 2/ProductSCD2 2/src/main.py gs://$BUCKET_NAME/product/main.py
+        gsutil cp "ProductSCD2 2/ProductSCD2 2/src/main.py" gs://$BUCKET_NAME/product/main.py
