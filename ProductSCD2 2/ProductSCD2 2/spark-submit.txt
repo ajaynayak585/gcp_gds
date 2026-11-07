@@ -1,0 +1,17 @@
+spark-submit \
+  --master yarn \
+  --deploy-mode cluster \
+  --conf spark.yarn.submit.waitAppCompletion=false \
+  --driver-memory 4G \
+  --executor-memory 4G \
+  --executor-cores 2 \
+  --num-executors 1 \
+  --packages com.amazon.deequ:deequ:2.0.11-spark-3.5 \
+  --py-files \
+gs://spark-datasets-gds/products/py_modules/deequ_checks.py,\
+gs://spark-datasets-gds/products/py_modules/etl.py,\
+gs://spark-datasets-gds/products/py_modules/spark_builder.py,\
+gs://spark-datasets-gds/products/py_modules/writer.py,\
+gs://spark-datasets-gds/products/py_modules/pydeequ-1.5.0-py3-none-any.whl \
+  gs://spark-datasets-gds/products/main.py \
+  --date 2025_05_01

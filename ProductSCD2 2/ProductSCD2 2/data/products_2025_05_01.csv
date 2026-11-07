@@ -1,0 +1,6 @@
+product_id,name,category,price,supplier,status,effective_date
+P1,Widget A,Gadgets,19.99,Supplier X,active,2025-05-01
+P2,Widget B,Gadgets,29.99,Supplier Y,active,2025-05-01
+P3,Gizmo A,Tools,9.99,Supplier Z,active,2025-05-01
+P4,Gizmo B,Tools,14.99,Supplier Z,active,2025-05-01
+P5,Doohickey,Widgets,4.99,Supplier X,active,2025-05-01
