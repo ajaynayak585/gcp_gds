@@ -48,12 +48,12 @@ jobs:
       run: |
         # create the target folder if you want (gsutil will auto-create)
         gsutil -m cp \
-          ProductSCD2 2/src/deequ_checks.py \
-          ProductSCD2 2/src/etl.py \
-          ProductSCD2 2/src/spark_builder.py \
-          ProductSCD2 2/src/writer.py \
+          gcp_gds/ProductSCD2 2/ProductSCD2 2/src/deequ_checks.py \
+          gcp_gds/ProductSCD2 2/ProductSCD2 2/src/etl.py \
+          gcp_gds/ProductSCD2 2/ProductSCD2 2/src/spark_builder.py \
+          gcp_gds/ProductSCD2 2/ProductSCD2 2/src/writer.py \
           gs://$BUCKET_NAME/$CODE_SUBDIR/
 
     - name: Copy main.py to GCS root
       run: |
-        gsutil cp ProductSCD2 2/src/main.py gs://$BUCKET_NAME/products/main.py
+        gsutil cp gcp_gds/ProductSCD2 2/ProductSCD2 2/src/main.py gs://$BUCKET_NAME/products/main.py
