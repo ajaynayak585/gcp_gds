@@ -7,8 +7,8 @@ on:
 
 env:
   # set your bucket here (or reference another secret/env)
-  BUCKET_NAME: spark-datasets-gds
-  CODE_SUBDIR: products/py_modules
+  BUCKET_NAME: gds_test_ajay
+  CODE_SUBDIR: input/py_modules
 
 jobs:
   push-to-gcs:
