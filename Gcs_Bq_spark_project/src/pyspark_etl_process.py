@@ -94,13 +94,29 @@ def merge_scd2_bq(project: str,dataset: str,staging_table: str,target_table: str
 
         merge_sql = f"""
         MERGE {target_fqn} AS T
-        USING {staging_fqn} AS S
-          ON {on}
-        WHEN MATCHED AND ({changes}) THEN
+                USING (
+                    SELECT S.*, 'expire' AS merge_action
+                    FROM {staging_fqn} AS S
+                    JOIN {target_fqn} AS T
+                        ON T.{key} = S.{key} AND T.is_current = TRUE
+                    WHERE ({changes})
+
+                    UNION ALL
+
+                    SELECT S.*, 'insert' AS merge_action
+                    FROM {staging_fqn} AS S
+                    LEFT JOIN {target_fqn} AS T
+                        ON T.{key} = S.{key} AND T.is_current = TRUE
+                    WHERE T.{key} IS NULL OR ({changes})
+                ) AS S
+                    ON T.{key} = S.{key}
+                    AND T.is_current = TRUE
+                    AND S.merge_action = 'expire'
+                WHEN MATCHED THEN
           UPDATE SET 
             T.is_current = FALSE,
             T.effective_end_date = S.effective_start_date
-        WHEN NOT MATCHED BY TARGET THEN
+                WHEN NOT MATCHED BY TARGET AND S.merge_action = 'insert' THEN
           INSERT ({', '.join(insert_cols)})
           VALUES ({', '.join(f'S.{c}' for c in insert_cols)})
         """
