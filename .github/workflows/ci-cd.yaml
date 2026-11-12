@@ -4,7 +4,6 @@ on:
   push:
     branches:
       - dev
-      - main
 
 jobs:
   upload-to-dev:
@@ -32,8 +31,8 @@ jobs:
       # Sync Spark job to GCS
       - name: Upload Spark Job to GCS
         run: |
-          gsutil cp src/pyspark_etl_process.py gs://us-east4-compos-gds-test-abe7d630-bucket/dags/spark-scripts
-          gsutil cp src/main_gcs_bq.py gs://us-east4-compos-gds-test-abe7d630-bucket/dags/spark-scripts
+          gsutil cp Gcs_Bq_spark_project/src/pyspark_etl_process.py gs://us-east4-compos-gds-test-abe7d630-bucket/dags/spark-scripts
+          gsutil cp Gcs_Bq_spark_project/src/main_gcs_bq.py gs://us-east4-compos-gds-test-abe7d630-bucket/dags/spark-scripts
      
       # Sync Airflow DAG to Airflow DEV Composer
       - name: Upload Airflow DAG to DEV Environment (Dag Folder)
@@ -41,4 +40,4 @@ jobs:
           gcloud composer environments storage dags import \
             --environment  compos-gds-test \
             --location us-east4 \
-            --source src/airflow_gcs_bq_dag.py
+            --source Gcs_Bq_spark_project/src/airflow_gcs_bq_dag.py
