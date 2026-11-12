@@ -1,0 +1,3 @@
+product_id,name,category,price,supplier,status,effective_date
+P2,Widget B,Gadgets,27.99,Supplier Y,active,2025-05-02
+P6,Thingamajig,Widgets,12.49,Supplier X,active,2025-05-02

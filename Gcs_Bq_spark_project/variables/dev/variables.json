@@ -1,0 +1,18 @@
+'pyspark_etl_variables':
+{
+    "env": "dev",
+    "bucket_uri": "gs://us-east4-compos-gds-test-abe7d630-bucket",
+    "bq_project": "project-afcbba29-4ec9-4335-86b",
+    "bq_dataset": "test_db",
+    "tables": {
+      "staging_table": "dim_products_staging",
+      "refined_table": "dim_products"
+    }
+}
+
+'dataproc_cluster_details':
+{
+"dataproc_cluster_name":"gds-test-pyspark",
+"PROJECT_ID":"project-afcbba29-4ec9-4335-86b",
+"REGION":"us-east4"
+}
