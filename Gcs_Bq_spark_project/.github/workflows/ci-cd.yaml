@@ -41,4 +41,4 @@ jobs:
           gcloud composer environments storage dags import \
             --environment  compos-gds-test \
             --location us-east4 \
-            --source airflow_gcs_bq_dag.py
+            --source src/airflow_gcs_bq_dag.py
