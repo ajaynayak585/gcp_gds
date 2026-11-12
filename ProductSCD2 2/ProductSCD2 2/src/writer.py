@@ -11,7 +11,7 @@ def write_to_staging(df, project, dataset, staging_table):
     df.select("product_id", "name", "category", "price", "supplier", "status","effective_start_date", "effective_end_date", "is_current").write \
       .format("bigquery") \
       .option("table", f"{project}.{dataset}.{staging_table}") \
-      .option("temporaryGcsBucket", "dataproc-tmp-gds") \
+      .option("temporaryGcsBucket", "gds_temp_test") \
       .mode("overwrite") \
       .save()
 
