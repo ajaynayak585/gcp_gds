@@ -1,0 +1,44 @@
+name: product gcs to bq CICD
+
+on:
+  push:
+    branches:
+      - dev
+      - main
+
+jobs:
+  upload-to-dev:
+    if: github.ref == 'refs/heads/dev'
+    runs-on: ubuntu-latest
+
+    steps:
+      # Checkout the repository
+      - name: Checkout Code
+        uses: actions/checkout@v3
+
+      # Authenticate to GCP
+      - name: Authenticate to GCP
+        uses: google-github-actions/auth@v1
+        with:
+          credentials_json: ${{ secrets.GCP_SA_KEY }}
+
+      # Setup Google Cloud SDK
+      - name: Setup Google Cloud SDK
+        uses: google-github-actions/setup-gcloud@v1
+        with:
+          project_id: ${{ secrets.GCP_PROJECT_ID }}
+
+
+      # Sync Spark job to GCS
+      - name: Upload Spark Job to GCS
+        run: |
+          gsutil cp src/pyspark_etl_process.py gs://us-east4-compos-gds-test-abe7d630-bucket/dags/spark-scripts
+          gsutil cp src/main_gcs_bq.py gs://us-east4-compos-gds-test-abe7d630-bucket/dags/spark-scripts
+     
+      # Sync Airflow DAG to Airflow DEV Composer
+      - name: Upload Airflow DAG to DEV Environment (Dag Folder)
+        run: |
+          gcloud composer environments storage dags import \
+            --environment  compos-gds-test \
+            --location us-east4 \
+            --source airflow_gcs_bq_dag.py
