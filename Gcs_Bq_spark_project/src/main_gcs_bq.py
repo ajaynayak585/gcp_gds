@@ -1,5 +1,6 @@
 import pyspark_etl_process
 import argparse
+#main function to run the ETL process
 
 def main():
 
