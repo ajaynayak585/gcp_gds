@@ -4,12 +4,13 @@ from airflow.models import Variable
 from airflow.providers.google.cloud.operators.dataproc import DataprocSubmitJobOperator 
 from airflow.operators.python import PythonOperator
 from airflow.providers.google.cloud.sensors.gcs import GCSObjectExistenceSensor
-
 import logging
 
+# Set up logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
+
 
 default_args = {
     'owner': 'airflow',
