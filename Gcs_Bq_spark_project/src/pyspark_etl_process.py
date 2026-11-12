@@ -90,19 +90,19 @@ def merge_scd2_bq(project: str,dataset: str,staging_table: str,target_table: str
         target_fqn = f"`{project}.{dataset}.{target_table}`"
         staging_fqn = f"`{project}.{dataset}.{staging_table}`"
         insert_cols = [key] + cols + ["effective_start_date", "effective_end_date", "is_current"]
-        insert_values = ", ".join(f"S.{c}" for c in insert_cols)
+        # insert_values = ", ".join(f"S.{c}" for c in insert_cols)
 
         merge_sql = f"""
         MERGE {target_fqn} AS T
         USING {staging_fqn} AS S
           ON {on}
         WHEN MATCHED AND ({changes}) THEN
-          UPDATE SET
+          UPDATE SET 
             T.is_current = FALSE,
-            T.effective_end_date = DATE_SUB(S.effective_start_date, INTERVAL 1 DAY)
+            T.effective_end_date = S.effective_start_date
         WHEN NOT MATCHED BY TARGET THEN
           INSERT ({', '.join(insert_cols)})
-          VALUES ({insert_values})
+          VALUES ({', '.join(f'S.{c}' for c in insert_cols)})
         """
 
         logger.info(f"Running SCD-2 merge for target table: {project}.{dataset}.{target_table}")
