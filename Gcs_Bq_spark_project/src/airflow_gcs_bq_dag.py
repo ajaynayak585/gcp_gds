@@ -4,6 +4,7 @@ from airflow.models import Variable
 from airflow.providers.google.cloud.operators.dataproc import DataprocSubmitJobOperator 
 from airflow.operators.python import PythonOperator
 from airflow.providers.google.cloud.sensors.gcs import GCSObjectExistenceSensor
+from airflow.operators.google.cloud.operators.bigquery import BigQueryInsertJobOperator
 import logging
 
 # Set up logging
@@ -30,7 +31,6 @@ dag = DAG(
     catchup=False
 )
 
-#fetch data as soon as file found in gcs bucket 
 pyspark_config = Variable.get("pyspark_etl_variables", deserialize_json=True)
 bucket_uri = pyspark_config['bucket_uri']
 bq_project = pyspark_config['bq_project']
@@ -45,6 +45,49 @@ PROJECT_ID = cluster_config['PROJECT_ID']
 REGION = cluster_config['REGION']
 
 
+#create bigquery job to run the pyspark job on dataproc cluster
+
+create_bigquery_tables = BigQueryInsertJobOperator(
+    task_id="create_bigquery_tables",
+    configuration={
+        "query": {
+            "query": f"""
+                -- Create staging table
+                CREATE TABLE IF NOT EXISTS
+                `{bq_project}.{bq_dataset}.{bq_staging_table}` (
+                    product_id STRING,
+                    name STRING,
+                    category STRING,
+                    price FLOAT64,
+                    supplier STRING,
+                    status STRING,
+                    effective_start_date DATE,
+                    effective_end_date DATE,
+                    is_current BOOL
+                );
+
+                -- Create SCD Type 2 target table
+                CREATE TABLE IF NOT EXISTS
+                `{bq_project}.{bq_dataset}.{bq_final_table}` (
+                    product_id STRING,
+                    name STRING,
+                    category STRING,
+                    price FLOAT64,
+                    supplier STRING,
+                    status STRING,
+                    effective_start_date DATE,
+                    effective_end_date DATE,
+                    is_current BOOL
+                );
+            """,
+            "useLegacySql": False
+        }
+    },
+    gcp_conn_id="google_cloud_default",
+    dag=dag
+)
+
+#fetch data as soon as file found in gcs bucket 
 file_sensor = GCSObjectExistenceSensor(
         task_id="check_file_arrival",
         bucket=bucket_uri,
@@ -54,8 +97,20 @@ file_sensor = GCSObjectExistenceSensor(
         timeout=300,  # Timeout in seconds
         poke_interval=30,  # Time between checks
         mode="poke",
+        trigger_rule='all_success',  # Ensure this task runs only if the previous tasks are successful
         dag=dag  # Blocking mode
     )
+
+def get_logs():
+    
+    logger.info("PYSPARK_JOB configuration: %s", PYSPARK_JOB)
+
+log_task=PythonOperator(
+    task_id='log_task',
+    python_callable=get_logs,
+    dag=dag,
+)
+
 
 PYSPARK_JOB = {
     "reference": {"project_id": PROJECT_ID},
@@ -73,15 +128,6 @@ PYSPARK_JOB = {
                    }
 }
 
-def get_logs():
-    
-    logger.info("PYSPARK_JOB configuration: %s", PYSPARK_JOB)
-
-log_task=PythonOperator(
-    task_id='log_task',
-    python_callable=get_logs,
-    dag=dag,
-)
 
 submit_pyspark_job = DataprocSubmitJobOperator(
     task_id='submit_pyspark_job',
@@ -93,4 +139,4 @@ submit_pyspark_job = DataprocSubmitJobOperator(
 )
 
 # Set the task dependencies
-file_sensor>>log_task>>submit_pyspark_job
+create_bigquery_tables>>file_sensor>>log_task>>submit_pyspark_job
