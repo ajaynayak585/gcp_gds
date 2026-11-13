@@ -20,14 +20,14 @@ default_args = {
     'email_on_retry': False,
     'retries': 1,
     'retry_delay': timedelta(minutes=5),
-    'start_date': datetime(2026, 11, 11),
+    'start_date': datetime(2026, 11, 13),
 }
 
 dag = DAG(
     'product_data_gcs_to_bq',
     default_args=default_args,
     description='A DAG to run Spark job on Dataproc ',
-    schedule_interval=None,
+    schedule_interval='*/10 * * * *',
     catchup=False
 )
 
