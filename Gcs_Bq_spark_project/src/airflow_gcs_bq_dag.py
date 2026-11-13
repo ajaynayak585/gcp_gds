@@ -4,7 +4,7 @@ from airflow.models import Variable
 from airflow.providers.google.cloud.operators.dataproc import DataprocSubmitJobOperator 
 from airflow.operators.python import PythonOperator
 from airflow.providers.google.cloud.sensors.gcs import GCSObjectExistenceSensor
-from airflow.operators.google.cloud.operators.bigquery import BigQueryInsertJobOperator
+from airflow.providers.google.cloud.operators.bigquery import BigQueryInsertJobOperator
 import logging
 
 # Set up logging
