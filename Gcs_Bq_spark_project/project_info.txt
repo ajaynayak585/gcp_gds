@@ -1,0 +1,131 @@
+airflow job details:
+------------------------
+
+already dataproc cluster exists , where other jobs also running.
+
+create dag--
+  read  and wait for perticular file in gcs bucket:
+       if exists : submit pyspark job on existing cluster(read data ,process and ingest into bq stagging area, 
+                   then compare with staging area and final records dump into main table.)
+	               bq staging table always truncate for each dag execution.
+	    
+	  not exists: wait 10min & failed the task and skip the downstream task.
+
+
+
+cron job details:
+------------------
+automatically scheduling the Airflow DAG, rather than manually triggering it every day.
+
+However, because your source file arrives daily in GCS, the pipeline should process data only after the expected file is available.
+
+This schedules the DAG at 3:00 AM IST every day, giving the upstream process time to deliver the file.
+
+Use the GCS sensor to wait for the daily file
+For a file named products_2025-05-06.csv:
+
+
+This assumes each 3 AM run processes the previous calendar day's file.
+For example, a May 7 run checks products_2025-05-06.csv
+
+
+target table: 
+
+product_id	name	category	price	supplier	status	 start_date  end_date is_active
+P1	Widget A	Gadgets	19.99	Supplier X	active	         01-05-2025  12-12-3000 True
+P2	Widget B	Gadgets	29.99	Supplier Y	active	         01-05-2025  12-12-3000 True
+
+
+source table:
+
+product_id	name	category	price	supplier	status	 start_date  end_date is_active
+P2	Widget B	Gadgets	20	Supplier X	active	         02-05-2025  12-12-3000 True
+P3	Widget C	Gadgets	30	Supplier X	active	         02-05-2025  12-12-3000 True
+
+
+now maintain scd 2 in target table
+
+result:
+product_id	name	category	price	supplier	status	 start_date  end_date is_active
+P1	Widget A	Gadgets	19.99	Supplier X	active	         01-05-2025  12-12-3000 True
+P2	Widget B	Gadgets	29.99	Supplier Y	active	         01-05-2025  01-05-2025 false
+P2	Widget B	Gadgets	29.99	Supplier Y	active	         02-05-2025  12-12-3000 True
+P3	Widget A	Gadgets	30	    Supplier X	active	         02-05-2025  12-12-3000 True
+
+
+prepare query for scd2 using merge query in Bigquery
+
+MERGE `project.dataset.product_target` AS T
+USING (
+    -- 1. Identify changed records to expire
+    SELECT
+        S.*,
+        'expire' AS merge_action
+    FROM `project.dataset.product_staging` AS S
+    JOIN `project.dataset.product_target` AS T
+        ON T.product_id = S.product_id
+        AND T.is_current = TRUE
+    WHERE
+        T.name <> S.name
+        OR T.category <> S.category
+        OR T.price <> S.price
+        OR T.supplier <> S.supplier
+        OR T.status <> S.status
+
+    UNION ALL
+
+    -- 2. Identify new and changed records to insert
+    SELECT
+        S.*,
+        'insert' AS merge_action
+    FROM `project.dataset.product_staging` AS S
+    LEFT JOIN `project.dataset.product_target` AS T
+        ON T.product_id = S.product_id
+        AND T.is_current = TRUE
+    WHERE
+        T.product_id IS NULL
+        OR T.name <> S.name
+        OR T.category <> S.category
+        OR T.price <> S.price
+        OR T.supplier <> S.supplier
+        OR T.status <> S.status
+
+) AS S
+
+ON T.product_id = S.product_id
+AND T.is_current = TRUE
+AND S.merge_action = 'expire'
+
+-- 3. Expire the existing active record
+WHEN MATCHED THEN
+    UPDATE SET
+        T.is_current = FALSE,
+        T.effective_end_date = S.effective_start_date
+
+-- 4. Insert new or changed records
+WHEN NOT MATCHED BY TARGET
+    AND S.merge_action = 'insert'
+THEN
+    INSERT (
+        product_id,
+        name,
+        category,
+        price,
+        supplier,
+        status,
+        effective_start_date,
+        effective_end_date,
+        is_current
+    )
+    VALUES (
+        S.product_id,
+        S.name,
+        S.category,
+        S.price,
+        S.supplier,
+        S.status,
+        S.effective_start_date,
+        S.effective_end_date,
+        S.is_current
+    );
+

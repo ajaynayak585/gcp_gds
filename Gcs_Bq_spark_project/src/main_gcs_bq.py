@@ -10,6 +10,7 @@ def main():
     parser.add_argument("--bq_dataset", help="BigQuery dataset name")
     parser.add_argument("--bq_staging_table", help="BigQuery staging table name")
     parser.add_argument("--bq_final_table", help="BigQuery final table name")
+    parser.add_argument("--input_file", type=str, required=True)
 
     args = parser.parse_args()
 
@@ -20,9 +21,10 @@ def main():
     bq_dataset = args.bq_dataset
     bq_staging_table = args.bq_staging_table
     bq_final_table = args.bq_final_table
+    input_file = args.input_file
 
     # Read daily data
-    df = pyspark_etl_process.read_daily_data(spark, bucket_uri)
+    df = pyspark_etl_process.read_daily_data(spark, bucket_uri, input_file)
 
     # Process for SCD-2
     df_scd2 = pyspark_etl_process.process_for_scd2(df)

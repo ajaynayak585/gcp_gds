@@ -27,13 +27,13 @@ def spark_session_builder():
         logger.error(f"Error initializing Spark session: {e}")
         sys.exit(1)
 
-def read_daily_data(spark, bucket_uri: str) -> DataFrame:
+def read_daily_data(spark, bucket_uri: str,input_file: str) -> DataFrame:
     try:
         logger.info(f"Reading daily data from GCS bucket: {bucket_uri}")
         """
         Reads products_{yyyy_MM_dd}.csv from GCS.
         """
-        path = f"gs://{bucket_uri}/data/product_data/products_*.csv"
+        path = f"gs://{bucket_uri}/data/product_data/{input_file}"
         return (
         spark.read
             .option("header", "true")
